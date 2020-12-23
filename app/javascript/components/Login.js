@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("test@test.com");
+  const [password, setPassword] = useState("123456");
+  const [jwt, setJWT] = useState("");
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    setJWT(localStorage.getItem("token"));
+  }, [jwt]);
+
+  const handleSubmit = e => {
+    e.preventDefault();
     const body = {
-      email,
-      password
+      auth: {
+        email,
+        password
+      }
     };
     fetch("/api/v1/user_token", {
       method: "POST",
@@ -23,28 +31,33 @@ const Login = () => {
         throw new Error("Network response was not ok.");
       })
       .then(response => {
-        debugger;
+        localStorage.setItem("token", response.jwt);
+        setJWT(response.jwt);
       })
       .catch(error => console.log(error.message));
   };
 
   return (
     <div>
-      <form>
-        <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-        <button type="submit" onClick={handleSubmit}>
-          Login
-        </button>
-      </form>
+      {jwt ? (
+        "Logged In"
+      ) : (
+        <form>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+          />
+          <button type="submit" onClick={handleSubmit}>
+            Login
+          </button>
+        </form>
+      )}
     </div>
   );
 };
